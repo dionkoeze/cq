@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "nodemon server.js",
+    "serve": "nodemon ./backend/server.js",
     "watch": "webpack --mode development --watch",
-    "start": "node server.js",
+    "start": "node ./backend/server.js",
     "build": "webpack --mode production"
   },
   "author": "",

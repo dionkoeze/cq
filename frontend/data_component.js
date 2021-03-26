@@ -1,9 +1,9 @@
 const m = require('mithril')
-const cq = require('./cq_client')
+const cq = require('../cq/cq_client')
 
 const connect = require('./io_connect')
 
-const State = require('./state2')
+const State = require('../state/state')
 const ListState = require('./list_state')
 
 const UserComponent = {
@@ -82,11 +82,7 @@ const ListComponent = {
                 return ''
             }
         }
-        // if (editors.length === 0) {
-        //     return m('ul.list', ListState.get('list').map((string) => m(ItemComponent, {string})))
-        // } else {
-            return m('ul.list', ListState.get('list').map((string, idx) => m(ItemComponent, {string, editors: make_list(editors[idx])})))
-        // }
+        return m('ul.list', ListState.get('list').map((string, idx) => m(ItemComponent, {string, editors: make_list(editors[idx])})))
     }
 }
 

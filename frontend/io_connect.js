@@ -1,4 +1,4 @@
-const cq = require('./cq_client')
+const cq = require('../cq/cq_client')
 
 function connect(name) {
     if (name == undefined) {

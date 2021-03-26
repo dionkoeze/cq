@@ -1,5 +1,4 @@
 const m = require('mithril')
-// const cq = require('./cq_client')
 
 const connect = require('./io_connect')
 connect()

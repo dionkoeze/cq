@@ -1,6 +1,6 @@
 const m = require('mithril')
-const cq = require('./cq_client')
-const State = require('./state2')
+const cq = require('../cq/cq_client')
+const State = require('../state/state')
 
 const ListState = new State('listState')
 

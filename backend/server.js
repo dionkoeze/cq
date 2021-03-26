@@ -3,7 +3,7 @@ app = express()
 const httpServer = require('http').createServer(app)
 const io = require('socket.io')(httpServer)
 
-const cq = require('./cq_server')
+const cq = require('../cq/cq_server')
 
 let memData = ['apple', 'banana', 'berry', 'water']
 let editors = [[], [], [], []]
@@ -35,8 +35,6 @@ cq.on('change-string', (params, update) => {
     // setTimeout(() => {
         memData = memData.map(str => str === params.from ? params.to : str)
     
-        console.log(params)
-        
         update({
             ...params,
             success: true,
@@ -67,6 +65,6 @@ cq.on('new-string', (params, update) => {
 
 cq.init(io)
 
-app.use('/', express.static(__dirname))
+app.use('/', express.static(__dirname + '/../'))
 
 httpServer.listen(process.env.PORT || 8080)
