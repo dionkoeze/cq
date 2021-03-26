@@ -32,6 +32,9 @@ function ItemComponent() {
             state.set('remote', vnode.attrs.string)
             return m('li.list__item', [
                 m('input.list__edit[type=text][required]', {
+                    style: {
+                        width: '90%',
+                    },
                     value: state.get('local'),
                     onfocus(e) {
                         e.preventDefault()
