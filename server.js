@@ -15,7 +15,6 @@ cq.on('get-list', (params, update) => {
 })
 
 cq.on('editors', (_, update) => {
-    console.log(editors)
     update(editors)
 })
 

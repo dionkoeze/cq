@@ -13,6 +13,7 @@ const UserComponent = {
             m('input#user__input.user__input', {
                 onchange(e) {
                     // console.log(window.socket)
+                    e.preventDefault()
                     connect(e.target.value)
                 },
             })
@@ -32,19 +33,22 @@ function ItemComponent() {
             return m('li.list__item', [
                 m('input.list__edit[type=text][required]', {
                     value: state.get('local'),
-                    onfocus() {
+                    onfocus(e) {
+                        e.preventDefault()
                         cq.once('edit-status', {
                             string: state.get('remote'),
                             editing: true,
                         })
                     },
-                    onblur() {
+                    onblur(e) {
+                        e.preventDefault()
                         cq.once('edit-status', {
                             string: state.get('local'),
                             editing: false,
                         })
                     },
                     onchange(e) {
+                        e.preventDefault()
                         state.set('local', e.target.value)
                         state.set('status', 'saving...')
                         cq.once('change-string', {
@@ -75,7 +79,7 @@ const ListComponent = {
             }
         }
         if (editors.length === 0) {
-            return m('ul.list', ListState.get('list').map((string, idx) => m(ItemComponent, {string})))
+            return m('ul.list', ListState.get('list').map((string) => m(ItemComponent, {string})))
         } else {
             return m('ul.list', ListState.get('list').map((string, idx) => m(ItemComponent, {string, editors: make_list(editors[idx])})))
         }
