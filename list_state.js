@@ -13,6 +13,7 @@ cq.start('get-list', {filter: ''}, response => {
 })
 
 cq.start('editors', {}, response => {
+    // console.log(response)
     ListState.set('editors', response)
     m.redraw()
 })

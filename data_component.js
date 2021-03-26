@@ -58,7 +58,7 @@ function ItemComponent() {
                     },
                 }),
                 m('.list__status', state.get('status')),
-                m('ul.list_editors', vnode.attrs.editors)
+                m('.list__editors', vnode.attrs.editors)
             ])
         }
     }
@@ -66,7 +66,19 @@ function ItemComponent() {
 
 const ListComponent = {
     view() {
-        return m('ul.list', ListState.get('list').map((string, idx) => m(ItemComponent, {string, editors: ListState.get('editors')[idx]})))
+        const editors = ListState.get('editors')
+        function make_list(names) {
+            if (names.length > 0) {
+                return names.reduce((acc, ed) => acc + ' ' + ed, 'Editing by:')
+            } else {
+                return ''
+            }
+        }
+        if (editors.length === 0) {
+            return m('ul.list', ListState.get('list').map((string, idx) => m(ItemComponent, {string})))
+        } else {
+            return m('ul.list', ListState.get('list').map((string, idx) => m(ItemComponent, {string, editors: make_list(editors[idx])})))
+        }
     }
 }
 

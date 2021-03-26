@@ -15,11 +15,11 @@ cq.on('get-list', (params, update) => {
 })
 
 cq.on('editors', (_, update) => {
+    console.log(editors)
     update(editors)
 })
 
 cq.on('edit-status', (params, update, auth) => {
-    console.log(auth)
     const idx = memData.findIndex(string => params.string === string)
     if (params.editing) {
         editors[idx].push(auth.name)
