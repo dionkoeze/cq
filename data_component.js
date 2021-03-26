@@ -47,7 +47,7 @@ function ItemComponent() {
                             editing: false,
                         })
                     },
-                    onchange(e) {
+                    oninput(e) {
                         e.preventDefault()
                         state.set('local', e.target.value)
                         state.set('status', 'saving...')
