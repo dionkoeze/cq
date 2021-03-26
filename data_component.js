@@ -58,6 +58,7 @@ function ItemComponent() {
                             state.unset('local')
                             state.set('status', '')
                             state.timed('status', 'saved!', 2000, () => m.redraw())
+                            m.redraw()
                         })
                     },
                 }),
@@ -72,17 +73,17 @@ const ListComponent = {
     view() {
         const editors = ListState.get('editors')
         function make_list(names) {
-            if (names.length > 0) {
+            if (names !== undefined && names.length > 0) {
                 return names.reduce((acc, ed) => acc + ' ' + ed, 'Editing by:')
             } else {
                 return ''
             }
         }
-        if (editors.length === 0) {
-            return m('ul.list', ListState.get('list').map((string) => m(ItemComponent, {string})))
-        } else {
+        // if (editors.length === 0) {
+        //     return m('ul.list', ListState.get('list').map((string) => m(ItemComponent, {string})))
+        // } else {
             return m('ul.list', ListState.get('list').map((string, idx) => m(ItemComponent, {string, editors: make_list(editors[idx])})))
-        }
+        // }
     }
 }
 
@@ -96,6 +97,7 @@ const CreateComponent = {
                 cq.once('new-string', {string: e.target[0].value}, response => {
                     const status = response.success ? `saved '${response.added}'` : 'problem!'
                     ListState.timed('status', status, 5000, () => m.redraw())
+                    m.redraw()
                 })
 
                 e.target[0].value = ''
