@@ -12,7 +12,6 @@ const UserComponent = {
             m('label[for=user__input]', 'Your name:'),
             m('input#user__input.user__input', {
                 onchange(e) {
-                    // console.log(window.socket)
                     e.preventDefault()
                     connect(e.target.value)
                 },
@@ -24,12 +23,14 @@ const UserComponent = {
 function ItemComponent() {
     const state = new State()
     state.set('remote', '')
+    state.set('id', '')
     state.set('status', '')
     state.observe('local', 'remote')
 
     return {
         view(vnode) {
-            state.set('remote', vnode.attrs.string)
+            state.set('remote', vnode.attrs.entry.string)
+            state.set('id', vnode.attrs.entry.id)
             return m('li.list__item', [
                 m('input.list__edit[type=text][required]', {
                     style: {
@@ -39,14 +40,14 @@ function ItemComponent() {
                     onfocus(e) {
                         e.preventDefault()
                         cq.once('edit-status', {
-                            string: state.get('remote'),
+                            id: state.get('id'),
                             editing: true,
                         })
                     },
                     onblur(e) {
                         e.preventDefault()
                         cq.once('edit-status', {
-                            string: state.get('local'),
+                            id: state.get('id'),
                             editing: false,
                         })
                     },
@@ -55,8 +56,8 @@ function ItemComponent() {
                         state.set('local', e.target.value)
                         state.set('status', 'saving...')
                         cq.once('change-string', {
-                            from: state.get('remote'),
-                            to: state.get('local'),
+                            id: state.get('id'),
+                            string: state.get('local'),
                         }, () => {
                             state.unset('local')
                             state.set('status', '')
@@ -82,7 +83,7 @@ const ListComponent = {
                 return ''
             }
         }
-        return m('ul.list', ListState.get('list').map((string, idx) => m(ItemComponent, {string, editors: make_list(editors[idx])})))
+        return m('ul.list', ListState.get('list').map((entry, idx) => m(ItemComponent, {entry, editors: make_list(editors[idx])})))
     }
 }
 

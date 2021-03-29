@@ -7,7 +7,8 @@ const ListState = new State('listState')
 ListState.set('list', [])
 ListState.set('editors', [])
 
-cq.start('get-list', {filter: ''}, response => {
+cq.start('get-list', {}, response => {
+    console.log(response)
     ListState.set('list', response)
     m.redraw()
 })

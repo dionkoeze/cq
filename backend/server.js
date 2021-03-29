@@ -3,64 +3,80 @@ app = express()
 const httpServer = require('http').createServer(app)
 const io = require('socket.io')(httpServer)
 
+const uuid = require('uuid').v4
+
 const cq = require('../cq/cq_server')
 
-let memData = ['apple', 'banana', 'berry', 'water']
-let editors = [[], [], [], []]
+let start_data = ['apple', 'banana', 'berry', 'water']
 
-cq.on('get-list', (params, update) => {
-    // setTimeout(() => {
-        update(memData.filter(val => val.includes(params.filter)))
-    // }, 500)
+let data = new Map()
+
+start_data
+.map(str => ({
+    id: uuid(),
+    string: str,
+    editors: [],
+}))
+.forEach(entry => {
+    data.set(entry.id, entry)
+})
+
+cq.on('get-list', (_, update) => {
+    update(Array.from(data.values()).map(({id, string}) => ({id, string})))
 })
 
 cq.on('editors', (_, update) => {
-    update(editors)
+    update(Array.from(data.values()).map(({editors}) => editors))
 })
 
 cq.on('edit-status', (params, update, auth) => {
-    const idx = memData.findIndex(string => params.string === string)
+    const entry = data.get(params.id)
+
     if (params.editing) {
-        editors[idx].push(auth.name)
+        entry.editors.push(auth.name)
     } else {
-        editors[idx] = editors[idx].filter(name => name !== auth.name)
+        entry.editors = entry.editors.filter(name => name !== auth.name)
     }
+
     update({
         success: true,
     })
+
     cq.trigger('editors')
 })
 
 cq.on('change-string', (params, update) => {
-    // setTimeout(() => {
-        memData = memData.map(str => str === params.from ? params.to : str)
-    
-        update({
-            ...params,
-            success: true,
-        })
-    
-        cq.trigger('get-list')
-    // }, 500)
+    data.get(params.id).string = params.string
+
+    update({
+        ...params,
+        success: true,
+    })
+
+    cq.trigger('get-list')
 })
 
 cq.on('new-string', (params, update) => {
-    // setTimeout(() => {
-        if (!!params.string) {
-            memData.push(params.string)
-            editors.push([])
-            update({
-                success: true,
-                added: params.string,
-            })
-        } else {
-            update({
-                success: false,
-            })
+    if (!!params.string) {
+        const entry = {
+            id: uuid(),
+            string: params.string,
+            editors: [],
         }
-    
-        cq.trigger('get-list')
-    // }, 500);
+
+        data.set(entry.id, entry)
+
+        update({
+            success: true,
+            added: params.string,
+        })
+    } else {
+        update({
+            success: false,
+        })
+    }
+
+    cq.trigger('get-list')
 })
 
 cq.init(io)
