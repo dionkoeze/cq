@@ -4,6 +4,7 @@ const State = require('../state/state')
 
 const ListState = new State('listState')
 
+ListState.set('user', '')
 ListState.set('list', [])
 ListState.set('editors', [])
 ListState.after_timed(() => m.redraw())

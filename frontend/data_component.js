@@ -11,13 +11,58 @@ const UserComponent = {
         return m('.user', [
             m('label[for=user__input]', 'Your name:'),
             m('input#user__input.user__input', {
-                onchange(e) {
+                oninput(e) {
                     e.preventDefault()
                     connect(e.target.value)
+                    ListState.set('user', e.target.value)
                 },
             })
         ])
     },
+}
+
+const FieldStaticComponent = {
+    view(vnode) {
+        return m('.list_static', vnode.attrs.state.get('local'))
+    }
+}
+
+const FieldEditComponent = {
+    view(vnode) {
+        return m('input.list__edit[type=text][required]', {
+            style: {
+                width: '90%',
+            },
+            value: vnode.attrs.state.get('local'),
+            onfocus(e) {
+                e.preventDefault()
+                cq.once('edit-status', {
+                    id: vnode.attrs.state.get('id'),
+                    editing: true,
+                })
+            },
+            onblur(e) {
+                e.preventDefault()
+                cq.once('edit-status', {
+                    id: vnode.attrs.state.get('id'),
+                    editing: false,
+                })
+            },
+            oninput(e) {
+                e.preventDefault()
+                vnode.attrs.state.set('local', e.target.value)
+                vnode.attrs.state.set('status', 'saving...')
+                cq.once('change-string', {
+                    id: vnode.attrs.state.get('id'),
+                    string: vnode.attrs.state.get('local'),
+                }, () => {
+                    vnode.attrs.state.unset('local')
+                    vnode.attrs.state.set('status', '')
+                    vnode.attrs.state.timed('status', 'saved!', 2000)
+                })
+            },
+        })
+    }
 }
 
 function ItemComponent() {
@@ -33,39 +78,7 @@ function ItemComponent() {
             state.set('remote', vnode.attrs.entry.string)
             state.set('id', vnode.attrs.entry.id)
             return m('li.list__item', [
-                m('input.list__edit[type=text][required]', {
-                    style: {
-                        width: '90%',
-                    },
-                    value: state.get('local'),
-                    onfocus(e) {
-                        e.preventDefault()
-                        cq.once('edit-status', {
-                            id: state.get('id'),
-                            editing: true,
-                        })
-                    },
-                    onblur(e) {
-                        e.preventDefault()
-                        cq.once('edit-status', {
-                            id: state.get('id'),
-                            editing: false,
-                        })
-                    },
-                    oninput(e) {
-                        e.preventDefault()
-                        state.set('local', e.target.value)
-                        state.set('status', 'saving...')
-                        cq.once('change-string', {
-                            id: state.get('id'),
-                            string: state.get('local'),
-                        }, () => {
-                            state.unset('local')
-                            state.set('status', '')
-                            state.timed('status', 'saved!', 2000)
-                        })
-                    },
-                }),
+                ListState.get('user') !== '' ? m(FieldEditComponent, {state}) : m(FieldStaticComponent, {state}),
                 m('.list__status', state.get('status')),
                 m('.list__editors', vnode.attrs.editors)
             ])
