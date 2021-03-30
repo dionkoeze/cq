@@ -26,6 +26,7 @@ function ItemComponent() {
     state.set('id', '')
     state.set('status', '')
     state.observe('local', 'remote')
+    state.after_timed(() => m.redraw())
 
     return {
         view(vnode) {
@@ -61,8 +62,7 @@ function ItemComponent() {
                         }, () => {
                             state.unset('local')
                             state.set('status', '')
-                            state.timed('status', 'saved!', 2000, () => m.redraw())
-                            m.redraw()
+                            state.timed('status', 'saved!', 2000)
                         })
                     },
                 }),
@@ -96,8 +96,7 @@ const CreateComponent = {
 
                 cq.once('new-string', {string: e.target[0].value}, response => {
                     const status = response.success ? `saved '${response.added}'` : 'problem!'
-                    ListState.timed('status', status, 5000, () => m.redraw())
-                    m.redraw()
+                    ListState.timed('status', status, 5000)
                 })
 
                 e.target[0].value = ''

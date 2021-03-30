@@ -57,6 +57,7 @@ class State {
         }
 
         this.vars = new Map()
+        this.afterHooks = new Map()
     }
 
     set(key, value) {
@@ -89,11 +90,22 @@ class State {
         const block = this.vars.get(key)
         block.data = value
         
-        setTimeout(() => {
+        setTimeout(async () => {
             block.empty()
 
-            if (callback) callback()
+            if (callback) await callback()
+            await Promise.all(Array.from(this.afterHooks.values()).map(hook => new Promise((res, _) => res()).then(hook)))
         }, time)
+    }
+
+    after_timed(callback) {
+        const id = uuid()
+        this.afterHooks.set(id, callback)
+        return id
+    }
+
+    remove_after_timed(id) {
+        this.afterHooks.delete(id)
     }
 
     _create(storage, key) {

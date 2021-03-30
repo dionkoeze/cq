@@ -6,15 +6,14 @@ const ListState = new State('listState')
 
 ListState.set('list', [])
 ListState.set('editors', [])
+ListState.after_timed(() => m.redraw())
 
 cq.start('get-list', {}, response => {
-    console.log(response)
     ListState.set('list', response)
     m.redraw()
 })
 
 cq.start('editors', {}, response => {
-    // console.log(response)
     ListState.set('editors', response)
     m.redraw()
 })
