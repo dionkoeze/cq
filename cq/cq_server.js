@@ -1,12 +1,36 @@
+const TreeEventEmitter = require('../tree_events/tree_events')
+
 const {get_key} = require('./cq_utils')
 
 const handlers = new Map()
+const tree = new TreeEventEmitter()
 let _io = null
+
+class Handler {
+    constructor(trigger, callback) {
+        console.log(callback)
+        this.callback = callback
+
+        if (trigger instanceof Function) {
+            this.trigger = trigger
+        } else {
+            this.trigger = () => {}
+        }
+    }
+}
 
 class ActiveQuery {
     constructor(query) {
         this.query = query
         this.size = 0
+
+        const handler = handlers.get(query.name)
+        this.callback = async () => await this.trigger()
+        tree.on(handler.trigger(query.params), this.callback)
+    }
+
+    detach() {
+        tree.detach(this.callback)
     }
 
     add(socket) {
@@ -31,8 +55,12 @@ class ActiveQuery {
             })
         }
 
+        const touched = (path) => {
+            tree.emit(path)
+        }
+
         const handler = handlers.get(this.query.name)
-        await handler(this.query.params, update, socket?.handshake.auth)
+        await handler.callback(this.query.params, update, touched, socket?.handshake.auth)
     }
 }
 
@@ -55,22 +83,24 @@ const Active = {
         active_query.remove(socket)
 
         if (active_query.size === 0) {
-            this.active.delete(key)
+            // this.active.delete(key)
+            this.delete(key)
         }
     },
-
+    
     delete(key) {
+        console.log(key)
+        this.active.get(key).detach()
         this.active.delete(key)
     },
 }
 
 // registers a new query endpoint
-function on(query_name, handler) {
-    handlers.set(query_name, handler)
+function on(query_name, handler, trigger) {
+    handlers.set(query_name, new Handler(trigger, handler))
 }
 
 function trigger(query_name) {
-    // TODO this is O(n) and needs improving!
     Active.active.forEach(aq => {
         if (aq.query.name === query_name) {
             aq.trigger()

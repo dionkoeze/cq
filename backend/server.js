@@ -22,6 +22,7 @@ start_data
 })
 
 cq.on('get-list', (_, update) => {
+    console.log(update)
     update(Array.from(data.values()).map(({id, string}) => ({id, string})))
 })
 
@@ -29,7 +30,7 @@ cq.on('editors', (_, update) => {
     update(Array.from(data.values()).map(({editors}) => editors))
 })
 
-cq.on('edit-status', (params, update, auth) => {
+cq.on('edit-status', (params, update, _, auth) => {
     const entry = data.get(params.id)
 
     if (params.editing) {
@@ -42,7 +43,9 @@ cq.on('edit-status', (params, update, auth) => {
         success: true,
     })
 
-    cq.trigger('editors')
+    // cq.trigger('editors')
+}, () => {
+    return 'editors'
 })
 
 cq.on('change-string', (params, update) => {
@@ -53,7 +56,9 @@ cq.on('change-string', (params, update) => {
         success: true,
     })
 
-    cq.trigger('get-list')
+    // cq.trigger('get-list')
+}, () => {
+    return 'get-list'
 })
 
 cq.on('new-string', (params, update) => {
@@ -76,7 +81,9 @@ cq.on('new-string', (params, update) => {
         })
     }
 
-    cq.trigger('get-list')
+    // cq.trigger('get-list')
+}, () => {
+    return 'get-list'
 })
 
 cq.init(io)
