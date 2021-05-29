@@ -14,7 +14,7 @@ function context_id(name, params) {
 }
 
 class Context {
-    async constructor(config, params) {
+    constructor(config, params) {
         this.config = config
         this.params = params
 
@@ -43,7 +43,7 @@ class Context {
 
         // check authorization
         try {
-            client_id = await this.config.is_authorized(auth)
+            client_id = await this.config.authorize(auth)
         } catch (err) {
             emit(socket_id, 'error', {
                 type: 'auth',
@@ -272,7 +272,7 @@ function init(io) {
             }
         })
 
-        socket.on('leave', function(payload) {
+        socket.on('leave', async function(payload) {
             if (active.has(payload.id)) {
                 await active.get(payload.id).leave(socket.id)
 
@@ -290,7 +290,7 @@ function init(io) {
             
         socket.on('disconnect', async function() {
             // TODO change to O(1) instead of O(n)!
-            await Promise.all(this.active.map((_, context) => context.missing(socket.id)))
+            await Promise.all(active.map((_, context) => context.missing(socket.id)))
         })
     })
 
@@ -303,7 +303,7 @@ function create(config) {
     }
 }
 
-function remove(name) {
+async function remove(name) {
     configs.delete(name)
 
     // TODO also close active contexts with that name?
@@ -311,7 +311,7 @@ function remove(name) {
     for (let entry of this.active) {
         if (entry[1].name === name) {
             await entry[1].close()
-            this.active.delete(entry[0])
+            active.delete(entry[0])
         }
     }
 }

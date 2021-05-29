@@ -1,13 +1,32 @@
+const sac = require('../sac/sac_client')
 const m = require('mithril')
 
-const connect = require('./io_connect')
-connect()
+const socket = io('http://localhost:8080/sac')
 
-const cq = require('../cq/cq_client')
+m.request({
+    method: 'POST',
+    url: 'http://localhost:8080/auth',
+})
+.then(token => {
+    console.log(token)
 
-cq.after(m.redraw()) // this does trigger more often than strictly necessary...
+    socket.emit('join', {
+        key: '123',
+        context: 'echo',
+        params: null,
+        auth: token,
+    })
+})
 
-const DataComponent = require('./data_component')
+socket.on('error', console.error)
 
-m.mount(document.getElementById('app'), DataComponent)
+// socket.on('joined', console.log)
+// socket.use()
+
+
+
+
+// const DataComponent = require('./data_component')
+
+// m.mount(document.getElementById('app'), DataComponent)
 
