@@ -1,5 +1,3 @@
-const should = require('should')
-
 const MapSet = require("../sac/map_set")
 
 describe('MapSet', () => {
@@ -163,5 +161,13 @@ describe('MapSet', () => {
             found_b1.should.be.true()
             found_b2.should.be.true()
         })
+    })
+
+    it('has an array of all keys', () => {
+        ms.add('a', 1)
+        ms.add('a', 2)
+        ms.add('b', 1)
+
+        ms.keys.should.be.eql(['a', 'b'])
     })
 })

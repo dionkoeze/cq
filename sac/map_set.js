@@ -60,6 +60,10 @@ class MapSet {
             set.forEach(value => callback(key, value))
         })
     }
+
+    get keys() {
+        return Array.from(this.map.keys())
+    }
 }
 
 module.exports = MapSet

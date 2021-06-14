@@ -20,11 +20,13 @@ To make this work clients are authenticated and authorized via another route (no
 ## Context creation
 When a context is created the config can determine whether the parameters that are send by the client are valid. Only if they are valid the context will be created. Note that a different context is created when different parameters are supplied by a client.
 
-The method `valid` is called with the parameters supplied by the client. If an exception is thrown the context is not created and the error is sent to the client.
+The method `is_valid` is called with the parameters supplied by the client. If an exception is thrown the context is not created and the error is sent to the client.
+
+This method cannot be async, as it is called in a constructor.
 
 ```js
 const config = {
-    async is_valid(params) {
+    is_valid(params) {
         if (!params.count) throw new Error('error: needs count')
     },
 }
@@ -34,9 +36,11 @@ After the parameters are determined to be valid the `config` can do some set up 
 
 It's expected not to throw and it cannot alter the flow of context creation. It is only intended to have side effects.
 
+This method cannot be async, as it is called in a constructor.
+
 ```js
 const config = {
-    async init(update_data, update_status, close) {
+    init(update_data, update_status, close) {
         // use callbacks in triggering
     }
 }
@@ -73,6 +77,19 @@ const config = {
                 message: 'only one client at a time',
             }
         }
+    }
+}
+```
+
+
+Whenever a client successfully joined the function `joined` of the config object is called to allow it to respond.
+
+It's expected this method never throws!
+
+```js
+const config = {
+    async joined(socket_id, client_id) {
+        // do something useful
     }
 }
 ```
