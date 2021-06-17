@@ -28,9 +28,10 @@ describe('SocketCache', () => {
     })
 
     it('emits when data changes', () => {
-        emitter.on('data', data => {
+        emitter.on('data', (dest, data) => {
             data_emitted += 1
-            data.should.be.eql({id: '123', data: 'abc'})
+            dest.should.be.eql('123')
+            data.should.be.eql('abc')
         })
 
         emitter.on('status', () => {
@@ -44,9 +45,10 @@ describe('SocketCache', () => {
     })
 
     it('does not emit when same data is given', () => {
-        emitter.on('data', data => {
+        emitter.on('data', (dest, data) => {
             data_emitted += 1
-            data.should.be.eql({id: '123', data: 'abc'})
+            dest.should.be.eql('123')
+            data.should.be.eql('abc')
         })
 
         emitter.on('status', () => {
@@ -82,9 +84,10 @@ describe('SocketCache', () => {
             data_emitted += 1
         })
 
-        emitter.on('status', status => {
+        emitter.on('status', (dest, status) => {
             status_emitted += 1
-            status.should.be.eql({id: '123', status: 'abc'})
+            dest.should.be.eql('123')
+            status.should.be.eql('abc')
         })
 
         cache.update_status('abc')
@@ -98,9 +101,10 @@ describe('SocketCache', () => {
             data_emitted += 1
         })
 
-        emitter.on('status', status => {
+        emitter.on('status', (dest, status) => {
             status_emitted += 1
-            status.should.be.eql({id: '123', status: 'abc'})
+            dest.should.be.eql('123')
+            status.should.be.eql('abc')
         })
 
         cache.update_status('abc')

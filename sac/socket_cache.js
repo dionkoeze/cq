@@ -12,10 +12,7 @@ class SocketCache {
         const h = hash(data)
         if (h !== this.data_hash) {
             this.data_hash = h
-            this.emitter.emit('data', {
-                id: this.id,
-                data
-            })
+            this.emitter.emit('data', this.id, data)
         }
     }
 
@@ -23,10 +20,7 @@ class SocketCache {
         const h = hash(status)
         if (h !== this.status_hash) {
             this.status_hash = h
-            this.emitter.emit('status', {
-                id: this.id,
-                status
-            })
+            this.emitter.emit('status', this.id, status)
         }
     }
 }

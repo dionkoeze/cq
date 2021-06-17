@@ -153,7 +153,7 @@ const config = {
 ```
 
 ## Leaving contexts
-When a client decides to leave a context the `config` can update its state. The associated client id is provided.
+When a client decides to leave a context the `config` can update its state. The associated client id is provided. This method is called before the leave request is replied to. Leaving a context triggers updating the membership status.
 
 It's expected to not throw exceptions!
 
@@ -176,4 +176,14 @@ const config = {
 ```
 
 ## Closing contexts
-When a context is closed the `config` is removed and all clients connected to active contexts are notified it is terminated.
+When a context is closed all connected clients are notified it is terminated. After that no communication is expected. The `on_close` method of the `config` is called before notifying any sockets of the closing.
+
+It is expected to not throw exceptions!
+
+```js
+const config = {
+    async on_close() {
+        // do final administration
+    }
+}
+```

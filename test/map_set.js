@@ -11,6 +11,14 @@ describe('MapSet', () => {
         ms.size.should.be.a.Number().and.exactly(0)
     })
 
+    it('returns a set of values by key', () => {
+        ms.add('a', 3)
+        ms.add('b', 2)
+        ms.add('a', 5)
+
+        ms.get('a').should.be.eql(new Set([3, 5]))
+    })
+
     it('adds values on non-existing keys', () => {
         ms.add('a', 4)
         ms.size.should.be.exactly(1)
@@ -48,6 +56,12 @@ describe('MapSet', () => {
         ms.sizeKey('a').should.be.exactly(1)
         ms.hasValue('a', 1).should.be.false()
         ms.hasValue('a', 2).should.be.true()
+    })
+
+    it('deletes the key when the last value is deleted', () => {
+        ms.add('a', 1)
+        ms.deleteValue('a', 1)
+        ms.hasKey('a').should.be.false()
     })
 
     it('fails silently when deleting non-existing values', () => {
