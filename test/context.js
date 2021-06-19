@@ -77,6 +77,10 @@ describe('Context', () => {
             context.params.should.be.eql(params)
         })
 
+        it('is initially empty', () => {
+            context.empty.should.be.true()
+        })
+
         it('has an id based on name and params', () => {
             context.should.have.property('id')
         })
@@ -241,6 +245,12 @@ describe('Context', () => {
             context.socket_is_member('sidA').should.be.true()
             context.socket_is_member('sidB').should.be.true()
             context.socket_is_member('sidC').should.be.true()
+        })
+
+        it('is not empty when a socket has joined', async () => {
+            await context.join(reply, 'sid', 'auth')
+
+            context.empty.should.be.false()
         })
         
         it('fails on bad auth', async () => {
@@ -573,6 +583,14 @@ describe('Context', () => {
             await context.join(reply, 'sidB', 'authA')
             await context.join(reply, 'sidC', 'authB')
         })
+        
+        it('is empty when all sockets have left', async () => {
+            await context.leave(reply, 'sidA')
+            await context.leave(reply, 'sidB')
+            await context.leave(reply, 'sidC')
+
+            context.empty.should.be.true()
+        })
 
         it('replies with success to leaving socket', async () => {
             let called = false
@@ -678,6 +696,7 @@ describe('Context', () => {
 
     describe('missing sockets', () => {
         // HIER VERDER!!!!
+        it('should handle missing sockets')
     })
 
     describe('closing contexts', () => {

@@ -67,6 +67,10 @@ class Context {
         return this.config.name
     }
 
+    get empty() {
+        return this.sockets.size === 0
+    }
+
     socket_is_member(socket_id) {
         return this.sockets2clients.hasKey(socket_id)
     }
@@ -164,7 +168,9 @@ class Context {
         reply.success(this.build_success('left context', 'left context'))
     }
 
-    async missing() {} // HIER VERDER!!!!!!!
+    async missing() {
+        throw Error('not implemented')
+    } // HIER VERDER!!!!!!!
 
     async close() {
         await this.config.on_close?.()
