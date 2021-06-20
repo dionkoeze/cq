@@ -30,7 +30,7 @@ class Context {
         try {
             this.config.is_valid?.(this.params)
         } catch (err) {
-            reply.error(this.build_error('invalid params', err))
+            reply(this.build_error('invalid params', err))
             throw Error('invalid params')
         }
         
@@ -40,7 +40,7 @@ class Context {
 
         this.config.init?.(this.update_data.bind(this), this.update_status.bind(this), this.close.bind(this))
 
-        reply.success(this.build_success('context created', 'context created'))
+        // reply(this.build_success('context created', 'context created'))
     }
     
     build_error(type, err) {
@@ -49,6 +49,7 @@ class Context {
             type,
             name: this.name,
             params: this.params,
+            id: this.id,
             message: err.message,
         }
     }
@@ -59,6 +60,7 @@ class Context {
             type,
             name: this.name,
             params: this.params,
+            id: this.id,
             message,
         }
     }
@@ -85,14 +87,14 @@ class Context {
         try {
             client_id = await this.config.authorize(auth)
         } catch (err) {
-            reply.error(this.build_error('unauthorized', err))
+            reply(this.build_error('unauthorized', err))
             return
         }
 
         try {
             await this.config.can_join?.(client_id, this.clients2sockets.keys)
         } catch (err) {
-            reply.error(this.build_error('not allowed', err))
+            reply(this.build_error('not allowed', err))
             return
         }
 
@@ -104,7 +106,7 @@ class Context {
 
         await this.config.joined?.(socket_id, client_id)
 
-        reply.success(this.build_success('joined context', 'joined context'))
+        reply(this.build_success('joined context', 'joined context'))
     }
 
     async handle_request(reply, request) {
@@ -113,12 +115,12 @@ class Context {
         // REPLIED TO SOCKET (GUARANTEE THAT DATA IS UPDATED BEFORE REPLY)
 
         if (typeof request.name !== 'string') {
-            reply.error(this.build_error('illegal request', Error('request name should be a string')))
+            reply(this.build_error('illegal request', Error('request name should be a string')))
             return
         }
 
         if (typeof this.config.requests?.[request.name] === 'undefined') {
-            reply.error(this.build_error('illegal request', Error('no known handler for this request')))
+            reply(this.build_error('illegal request', Error('no known handler for this request')))
             return
         }
 
@@ -129,9 +131,9 @@ class Context {
             
             await this.update_status()
 
-            reply.success(this.build_success('reply', response))
+            reply(this.build_success('reply', response))
         } catch (err) {
-            reply.error(this.build_error('handler error', err))
+            reply(this.build_error('handler error', err))
         }
 
     }
@@ -165,7 +167,7 @@ class Context {
 
         await this.update_status()
 
-        reply.success(this.build_success('left context', 'left context'))
+        reply(this.build_success('left context', 'left context'))
     }
 
     async missing() {
