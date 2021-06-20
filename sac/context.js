@@ -106,32 +106,36 @@ class Context {
 
         await this.config.joined?.(socket_id, client_id)
 
-        reply(this.build_success('joined context', 'joined context'))
+        reply(this.build_success('joined', `joined context ${this.name}`))
     }
 
-    async handle_request(reply, request) {
+    async handle_request(reply, request, socket_id) {
         // SHOULD EMIT AN EVENT SIGNALLING ALL OTHER CONTEXTS THEY
         // MIGHT NEED TO UPDATE THEIR DATA BEFORE THIS REQUEST IS
         // REPLIED TO SOCKET (GUARANTEE THAT DATA IS UPDATED BEFORE REPLY)
 
-        if (typeof request.name !== 'string') {
-            reply(this.build_error('illegal request', Error('request name should be a string')))
+        if (typeof request.query !== 'string') {
+            reply(this.build_error('illegal request', Error('request query should be a string')))
             return
         }
 
-        if (typeof this.config.requests?.[request.name] === 'undefined') {
+        if (typeof this.config.requests?.[request.query] === 'undefined') {
             reply(this.build_error('illegal request', Error('no known handler for this request')))
             return
         }
 
+        if (!this.sockets2clients.hasKey(socket_id)) {
+            reply(this.build_error('no member', Error('you are not a member of this context')))
+        }
+
         try {
-            const response = await this.config.requests[request.name](request.params)
+            const response = await this.config.requests[request.query](request.params)
             
             await this.update_data()
             
             await this.update_status()
 
-            reply(this.build_success('reply', response))
+            reply(this.build_success('response', response))
         } catch (err) {
             reply(this.build_error('handler error', err))
         }
@@ -155,22 +159,25 @@ class Context {
     }
 
     async leave(reply, socket_id) {
-        // this assumes a socket has at most one client connected
-        const clients = this.sockets2clients.get(socket_id)
-        const client_id = clients.values().next().value
-        
-        await this.config.on_leave?.(client_id)
-        
-        this.sockets2clients.delete(socket_id)
-        this.clients2sockets.deleteValue(client_id, socket_id)
-        this.sockets.delete(socket_id)
-
-        await this.update_status()
+        if (this.sockets2clients.hasKey(socket_id)) {
+            // this assumes a socket has at most one client connected
+            const clients = this.sockets2clients.get(socket_id)
+            const client_id = clients.values().next().value
+            
+            await this.config.on_leave?.(client_id)
+            
+            this.sockets2clients.delete(socket_id)
+            this.clients2sockets.deleteValue(client_id, socket_id)
+            this.sockets.delete(socket_id)
+    
+            await this.update_status()
+        }
 
         reply(this.build_success('left context', 'left context'))
     }
 
     async missing() {
+        // TODO
         throw Error('not implemented')
     } // HIER VERDER!!!!!!!
 

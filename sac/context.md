@@ -65,17 +65,14 @@ const config = {
 
 Whenever a client is allowed to join a context according to authentication and authorization rules the context gets to decide whether the client can join given the current clients that are joined.
 
-Expected to return `undefined` if client can join, anything else if not. The object that the function returns is given to the client. It is given the client id returned by `authorize` and a `Set` containing already joined client ids.
+Expected to not throw if client can join. It is given the client id returned by `authorize` and an array containing already joined client ids.
 
 ```js
 const config = {
     async can_join(client, clients) {
         // only one can be connected at a time
         if (clients.size > 0) {
-            return {
-                type: 'full',
-                message: 'only one client at a time',
-            }
+            throw Error('context full: only one client at a time')
         }
     }
 }
@@ -129,7 +126,9 @@ const config = {
 ## Handling requests
 Within a context clients can make requests that are answered with responses produced by the `config`. All requests are function in the `requests` property. The return value of a function is the response.
 
-If the data or membership status of the context needs to be changed that happens through registering triggering in the `init` method and emitting some triggering event when a request led to changes in data.
+It is guaranteed that all sockets receive the updated data and membership status before the requests is replied to. This enables clients to fall back to the latest update they received after receiving the response to a request.
+
+TODO: There should be some kind of internal triggering to let other contexts update their data too before the response is sent.
 
 ```js
 const config = {
@@ -137,16 +136,10 @@ const config = {
         async update(params) {
             // change data
 
-            // emit triggering event
-
-            return response
+            return response // success to socket
         },
         async remove(params) {
-            // change data
-            
-            // emit triggering event
-
-            return response
+            throw Error('removing is not allowed') // error to socket
         }
     },
 }

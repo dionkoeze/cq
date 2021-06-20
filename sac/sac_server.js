@@ -38,13 +38,11 @@ function exists(name) {
 }
 
 function active_name(name, params) {
-    // TODO
-    // return contexts.has(context_id(name, params))
+    return contexts.has(context_id(name, params))
 }
 
 function active_id(id) {
-    // TODO
-    // return contexts.has(id)
+    return contexts.has(id)
 }
 
 function ensure_active(respond, name, params) {
@@ -63,27 +61,15 @@ function init(io) {
     // .of('/sac')
     io.on('connection', function(socket) {
         socket.on('join', async function(auth, context, reply) {
-            // console.log('payload', payload)
-
-            // USE SOCKET.IO ACKNOWLEDGEMENTS FOR REPLYING!!!
-
-            // ensure_active(context.name, context.params)
-
             const id = context_id(context.name, context.params)
 
             if (!active_id(id)) {
-                console.log(id, 'not found')
-
                 if (configs.has(context.name)) {
-                    console.log('creating', context.name)
-
                     let ctx
 
                     try {
                         ctx = new Context(reply, configs.get(context.name), emit, context.params)
-                        console.log('created', context.name)
-                    } catch (err) {
-                        console.log(err)
+                    } catch (_) {
                         return
                     }
 
@@ -91,7 +77,7 @@ function init(io) {
                 } else {
                     reply({
                         success: false,
-                        type: 'unknown context',
+                        type: 'unknown',
                         name: context.name,
                         params: context.params,
                         message: 'no context with that name registered',
@@ -102,16 +88,44 @@ function init(io) {
             const ctx = contexts.get(id)
 
             await ctx.join(reply, socket.id, auth)
-
-            // reply('you joined')
         })
 
-        socket.on('request', async function(payload) {
-            
+        socket.on('request', async function(id, request, reply) {
+            if (contexts.has(id)) {
+                const ctx = contexts.get(id)
+
+                await ctx.handle_request(reply, request, socket.id)
+            } else {
+                reply({
+                    success: false,
+                    type: 'unknown',
+                    id,
+                    request,
+                    message: 'no context with that id registered'
+                })
+            }
         })
 
-        socket.on('leave', async function(payload) {
-            
+        socket.on('leave', async function(id, reply) {
+            if (contexts.has(id)) {
+                const ctx = contexts.get(id)
+
+                await ctx.leave(reply, socket.id)
+
+                // THIS REMOVAL HAPPENS AFTER CONTEXTS SENDS A RESPONSE?!
+                // THEREFORE TEST FAILS?!
+                if (ctx.empty()) {
+                    contexts.delete(id)
+                }
+            } else {
+                reply({
+                    success: false,
+                    type: 'unknown',
+                    id,
+                    request,
+                    message: 'no context with that id registered'
+                })
+            }
         })
             
         socket.on('disconnect', async function() {

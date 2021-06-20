@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --watch --reporter min",
+    "test": "mocha --watch",
     "serve": "nodemon ./backend/server.js",
     "watch": "webpack --mode development --watch",
     "start": "node ./backend/server.js",

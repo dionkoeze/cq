@@ -225,11 +225,11 @@ describe('Context', () => {
             reply = (msg) => {
                 called = true
                 msg.should.have.property('success', true)
-                msg.should.have.property('type', 'joined context')
+                msg.should.have.property('type', 'joined')
                 msg.should.have.property('name', config.name)
                 msg.should.have.property('params', params)
                 msg.should.have.property('id', id)
-                msg.should.have.property('message', 'joined context')
+                msg.should.have.property('message', `joined context ${config.name}`)
             }
 
             await context.join(reply, 'sid', 'auth')
@@ -448,7 +448,7 @@ describe('Context', () => {
                 params.should.be.eql({par: 'ams'})
             }
 
-            await context.handle_request(reply, {name: 'create', params: {par: 'ams'}})
+            await context.handle_request(reply, {query: 'create', params: {par: 'ams'}})
 
             called.should.be.true()
         })
@@ -470,7 +470,7 @@ describe('Context', () => {
                 })
             }
 
-            await context.handle_request(reply, {name: 'create'})
+            await context.handle_request(reply, {query: 'create'})
 
             errored.should.be.true()
         })
@@ -490,7 +490,7 @@ describe('Context', () => {
                 })
             }
 
-            await context.handle_request(reply, {name: 'create'})
+            await context.handle_request(reply, {query: 'create'})
 
             errored.should.be.true()
         })
@@ -506,17 +506,19 @@ describe('Context', () => {
                     name: config.name,
                     params,
                     id,
-                    message: 'request name should be a string'
+                    message: 'request query should be a string'
                 })
             }
 
-            await context.handle_request(reply, {name: 123})
+            await context.handle_request(reply, {query: 123})
 
             errored.should.be.true()
         })
 
         it('replies with success if handler does not throw', async () => {
             let called = false
+
+            await context.join(reply, 'sid', 'auth')
 
             config.requests = {}
             config.requests.create = () => ['this', 'is', 'the', 'reply']
@@ -525,7 +527,7 @@ describe('Context', () => {
                 called = true
                 msg.should.be.eql({
                     success: true,
-                    type: 'reply',
+                    type: 'response',
                     name: config.name,
                     params,
                     id,
@@ -533,13 +535,15 @@ describe('Context', () => {
                 })
             }
 
-            await context.handle_request(reply, {name: 'create'})
+            await context.handle_request(reply, {query: 'create'}, 'sid')
 
             called.should.be.true()
         })
         
         it('replies with an error if handler throws', async () => {
             let called = false
+
+            await context.join(reply, 'sid', 'auth')
 
             config.requests = {}
             config.requests.create = () => {throw Error('handler error')}
@@ -556,7 +560,7 @@ describe('Context', () => {
                 })
             }
 
-            await context.handle_request(reply, {name: 'create'})
+            await context.handle_request(reply, {query: 'create'}, 'sid')
 
             called.should.be.true()
         })
@@ -588,7 +592,7 @@ describe('Context', () => {
                 replied.should.be.false()
             })
 
-            await context.handle_request(reply, {name: 'create'})
+            await context.handle_request(reply, {query: 'create'}, 'sid')
 
             replied.should.be.true()
             updated_data.should.be.true()
