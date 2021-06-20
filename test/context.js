@@ -2,10 +2,10 @@ const { Context, context_id } = require("../sac/context")
 const events = require('events')
 
 describe('Context', () => {
-    let context, config, emitter, reply, params, id
+    let context, config, emitter, emit, reply, params, id
 
     function create_context() {
-        return new Context(reply, config, emitter, params)
+        return new Context(reply, config, emit, params)
     }
 
     beforeEach(() => {
@@ -17,6 +17,9 @@ describe('Context', () => {
         }
 
         emitter = new events.EventEmitter()
+        emit = (dest, event, payload) => {
+            emitter.emit(event, dest, payload)
+        }
 
         params = {
             query: 'select all',
@@ -31,7 +34,7 @@ describe('Context', () => {
 
         id = context_id(config.name, params)
 
-        context = new Context(reply, config, emitter, params)
+        context = new Context(reply, config, emit, params)
     })
 
     describe('replies', () => {
@@ -72,7 +75,7 @@ describe('Context', () => {
         })
 
         it('requires a name', () => {
-            should(() => new Context(reply, {authorize: () => {}}, emitter)).throw('context requires a name in the config object')
+            should(() => new Context(reply, {authorize: () => {}}, emit)).throw('context requires a name in the config object')
         })
 
         it('has a name', () => {

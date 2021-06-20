@@ -7,7 +7,7 @@ function context_id(name, params) {
 }
 
 class Context {
-    constructor(reply, config, emitter, params) {
+    constructor(reply, config, emit, params) {
         if (config == null) {
             throw Error('context requires a config object')
         }
@@ -17,13 +17,13 @@ class Context {
         if (config.name == null) {
             throw Error('context requires a name in the config object')
         }
-        if (emitter == null || typeof emitter.emit !== 'function') {
+        if (typeof emit !== 'function') {
             throw Error('context requires an emitter')
         }
         
         this.config = config
         this.params = params
-        this.emitter = emitter
+        this.emit = emit
         
         this.id = context_id(this.config.name, this.params)
         
@@ -100,7 +100,7 @@ class Context {
 
         this.clients2sockets.add(client_id, socket_id)
         this.sockets2clients.add(socket_id, client_id)
-        this.sockets.set(socket_id, new SocketCache(socket_id, this.emitter))
+        this.sockets.set(socket_id, new SocketCache(socket_id, this.emit))
 
         await this.update_status()
 
@@ -177,7 +177,7 @@ class Context {
     async close() {
         await this.config.on_close?.()
 
-        this.sockets.forEach(socket => this.emitter.emit('close', socket.id))
+        this.sockets.forEach(socket => this.emit(socket.id, 'close'))
     }
 }
 

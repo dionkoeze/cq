@@ -2,12 +2,15 @@ const SocketCache = require('../sac/socket_cache')
 const events = require('events')
 
 describe('SocketCache', () => {
-    let emitter, cache
+    let emitter, emit, cache
     let data_emitted, status_emitted
 
     beforeEach(() => {
         emitter = new events.EventEmitter()
-        cache = new SocketCache('123', emitter)
+        emit = (dest, event, payload) => {
+            emitter.emit(event, dest, payload)
+        }
+        cache = new SocketCache('123', emit)
         data_emitted = 0
         status_emitted = 0
     })

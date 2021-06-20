@@ -57,7 +57,7 @@ function ensure_active(respond, name, params) {
 function init(io) {
     reset()
 
-    emit = (event, dest, payload) => io.to(dest).emit(event, payload)
+    emit = (dest, event, payload) => io.to(dest).emit(event, payload)
    
     // TODO: use namespace?
     // .of('/sac')
