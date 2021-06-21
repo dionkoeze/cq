@@ -622,7 +622,7 @@ describe('Context', () => {
                 called = true
                 msg.should.be.eql({
                     success: true,
-                    type: 'left context',
+                    type: 'left',
                     name: config.name,
                     params,
                     id,
@@ -731,10 +731,14 @@ describe('Context', () => {
             
             let Aclosed = false, Bclosed = false, Cclosed = false
             
-            emitter.on('close', (dest) => {
+            emitter.on('close', (dest, ctx) => {
                 if (dest === 'sidA') Aclosed = true
                 if (dest === 'sidB') Bclosed = true
                 if (dest === 'sidC') Cclosed = true
+
+                ctx.should.have.property('name', config.name)
+                ctx.should.have.property('params', params)
+                ctx.should.have.property('id')
             })
 
             await context.close()

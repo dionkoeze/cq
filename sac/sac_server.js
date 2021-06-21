@@ -30,7 +30,12 @@ function add(config) {
 async function remove(name) {
     configs.delete(name)
 
-    // TODO: close active contexts with this name!
+    contexts.forEach(async (ctx, id) => {
+        if (ctx.name === name) {
+            await ctx.close()
+            contexts.delete(id)
+        }
+    })
 }
 
 function exists(name) {
@@ -43,12 +48,6 @@ function active_name(name, params) {
 
 function active_id(id) {
     return contexts.has(id)
-}
-
-function ensure_active(respond, name, params) {
-    if (!active_name(name, params)) {
-
-    }
 }
 
 // socket.io is only used as transport and is confined to this function
@@ -112,9 +111,7 @@ function init(io) {
 
                 await ctx.leave(reply, socket.id)
 
-                // THIS REMOVAL HAPPENS AFTER CONTEXTS SENDS A RESPONSE?!
-                // THEREFORE TEST FAILS?!
-                if (ctx.empty()) {
+                if (ctx.empty) {
                     contexts.delete(id)
                 }
             } else {
@@ -132,7 +129,6 @@ function init(io) {
             
         })
     })
-
 }
 
 module.exports = {

@@ -1,5 +1,4 @@
 const { createServer } = require("http");
-const { resolve } = require("path");
 const { Server } = require("socket.io");
 const Client = require("socket.io-client");
 
@@ -298,13 +297,57 @@ describe('shared active context server', () => {
             })
         })
         
-        it('lets a socket leave')
+        it('lets a socket leave', (done) => {
+            clientSocketA.emit('join', 'auth', {
+                name: 'testctx',
+            }, (res) => {
+                res.success.should.be.true()
+                clientSocketA.emit('leave', res.id, (res) => {
+                    res.should.have.property('success', true)
+                    res.should.have.property('type', 'left')
+                    res.should.have.property('name', 'testctx')
+                    res.should.have.property('id')
+                    res.should.have.property('message', 'left context')
+                    done()
+                })
+            })
+        })
 
-        it('fails silently if a socket leaves a context it is not a member of')
+        it('fails silently if a socket leaves a context it is not a member of', (done) => {
+            clientSocketA.emit('join', 'auth', {
+                name: 'testctx'
+            }, (res) => {
+                res.success.should.be.true()
+                clientSocketB.emit('leave', res.id, (res) => {
+                    res.should.have.property('success', true)
+                    res.should.have.property('type', 'left')
+                    res.should.have.property('name', 'testctx')
+                    res.should.have.property('id')
+                    res.should.have.property('message', 'left context')
+                    done()
+                })
+            })
+        })
         
         it('handles the disconnect event')
 
-        it('closes active contexts when their config object is removed')
+        it('closes active contexts when their config object is removed', (done) => {
+            clientSocketA.on('close', (ctx) => {
+                ctx.should.have.property('name', 'testctx')
+                ctx.should.have.property('params', {param: true})
+                ctx.should.have.property('id')
+                done()
+            })
+
+            clientSocketA.emit('join', 'auth', {
+                name: 'testctx',
+                params: {param: true}
+            }, async (res) => {
+                res.success.should.be.true()
+                await sac.remove('testctx')
+                sac.exists('testctx').should.be.false()
+            })
+        })
         
         it('has an active context after joining', (done) => {
             clientSocketA.emit('join', 'auth', {
@@ -325,14 +368,10 @@ describe('shared active context server', () => {
             }, (res) => {
                 res.success.should.be.true()
                 clientSocketA.emit('leave', res.id, (res) => {
-                    console.log(res)
                     res.success.should.be.true()
-                    // FAILS BECAUSE OF SOMETHING ELSE?!
-                    setImmediate(() => {
-                        sac.active_id(res.id).should.be.false()
-                        sac.active_name(res.name, res.params).should.be.false()
-                        done()
-                    })
+                    sac.active_id(res.id).should.be.false()
+                    sac.active_name(res.name, res.params).should.be.false()
+                    done()
                 })
             })
         })

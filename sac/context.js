@@ -173,7 +173,7 @@ class Context {
             await this.update_status()
         }
 
-        reply(this.build_success('left context', 'left context'))
+        reply(this.build_success('left', 'left context'))
     }
 
     async missing() {
@@ -184,7 +184,11 @@ class Context {
     async close() {
         await this.config.on_close?.()
 
-        this.sockets.forEach(socket => this.emit(socket.id, 'close'))
+        this.sockets.forEach(socket => this.emit(socket.id, 'close', {
+            name: this.name,
+            params: this.params,
+            id: this.id,
+        }))
     }
 }
 
