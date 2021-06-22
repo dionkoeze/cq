@@ -7,7 +7,7 @@ const uuid = require('uuid').v4
 
 const sac = require('../sac/sac_server')
 
-let start_data = ['apple', 'banana', 'berry', 'water']
+let start_data = ['apple', 'banana', 'milk', 'water']
 
 let data = new Map()
 
@@ -15,7 +15,7 @@ start_data
 .map(str => ({
     id: uuid(),
     string: str,
-    editors: [],
+    editor: undefined,
 }))
 .forEach(entry => {
     data.set(entry.id, entry)
@@ -23,17 +23,41 @@ start_data
 
 sac.init(io)
 
-sac.create({
-    name: 'echo',
-    is_valid() {},
-    init(update_data, update_status, close) {},
+sac.add({
+    name: 'items',
     authorize(token) {
         return jwt.verify(token, 'secret')
+    },
+    data() {
+        return Array.from(data.values()).map(entry => ({id: entry.id, string: entry.str}))
+    },
+    status() {
+        return Array.from(data.values()).map(entry => ({id: entry.id, editor: entry.editor}))
+    },
+    requests: {
+        add() {
+
+        },
     }
 })
 
+// sac.add({
+//     name: 'edit',
+//     authorize(token) {
+//         return jwt.verify(token, 'secret')
+//     },
+//     can_join() {
+
+//     },
+//     requests: {
+//         set() {
+
+//         },
+//     }
+// })
+
 app.post('/auth', function(req, res) {
-    res.status(201).json(jwt.sign(uuid(), 'secret'))
+    res.status(201).json(jwt.sign(req.body.name, 'secret'))
 })
 
 app.use('/', express.static(__dirname + '/../'))

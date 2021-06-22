@@ -1,24 +1,49 @@
-const sac = require('../sac/sac_client')
 const m = require('mithril')
+const socket = io('http://localhost:8080')
+const sac = require('../sac/sac_client')
 
-const socket = io('http://localhost:8080/sac')
 
-m.request({
-    method: 'POST',
-    url: 'http://localhost:8080/auth',
-})
-.then(token => {
-    console.log(token)
+const AuthComponent = {
+    view(vnode) {
+        return [
+            m('p', 'Wat is je naam?'),
+            m('input', {
+                placeholder: 'je naam',
+                oninput(e) {
+                    e.preventDefault()
+                    console.log(e.target.value)
+                    vnode.attrs.name = e.target.value
+                }
+            }),
+            m('button', {
+                disabled: true,
+                value: 'Start',
+                onclick() {
+                    console.log('clicked')
+                },
+            }),
+        ]
+    }
+}
 
-    socket.emit('join', {
-        key: '123',
-        context: 'echo',
-        params: null,
-        auth: token,
-    })
-})
+m.mount(document.getElementById('app'), AuthComponent)
 
-socket.on('error', console.error)
+// m.request({
+//     method: 'POST',
+//     url: 'http://localhost:8080/auth',
+// })
+// .then(token => {
+//     console.log(token)
+
+//     socket.emit('join', {
+//         key: '123',
+//         context: 'echo',
+//         params: null,
+//         auth: token,
+//     })
+// })
+
+// socket.on('error', console.error)
 
 // socket.on('joined', console.log)
 // socket.use()

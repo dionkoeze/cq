@@ -330,7 +330,8 @@ describe('Context', () => {
                 if (dest === 'sidA') Acalled += 1
                 if (dest === 'sidB') Bcalled += 1
                 if (dest === 'sidC') Ccalled += 1
-                data.should.be.exactly('test data')
+                data.should.have.property('id')
+                data.should.have.property('data', 'test data')
             })
 
             config.data = () => 'test data'
@@ -356,7 +357,8 @@ describe('Context', () => {
                 if (dest === 'sidB') Bcalled += 1
                 if (dest === 'sidC') Ccalled += 1
                 if (dest === 'sidD') Dcalled += 1
-                data.should.be.exactly('test data')
+                data.should.have.property('id')
+                data.should.have.property('data', 'test data')
             })
 
             await context.join(reply, 'sidD', 'authD')
@@ -398,7 +400,8 @@ describe('Context', () => {
                 if (dest === 'sidA') Acalled += 1
                 if (dest === 'sidB') Bcalled += 1
                 if (dest === 'sidC') Ccalled += 1
-                status.should.be.eql(['authA', 'authB'])
+                status.should.have.property('id')
+                status.should.have.property('status', ['authA', 'authB'])
             })
             
             // to test caching the second update this is called twice
@@ -422,7 +425,8 @@ describe('Context', () => {
                 if (dest === 'sidB') Bcalled += 1
                 if (dest === 'sidC') Ccalled += 1
                 if (dest === 'sidD') Dcalled += 1
-                status.should.be.eql('status')
+                status.should.have.property('id')
+                status.should.have.property('status', 'status')
             })
 
             await context.join(reply, 'sidD', 'authD')
@@ -690,7 +694,8 @@ describe('Context', () => {
             emitter.on('status', (dest, status) => {
                 updated = true
                 replied.should.be.false()
-                status.should.eql(['authA'])
+                status.should.have.property('id')
+                status.should.have.property('status', ['authA'])
             })
 
             await context.leave(reply, 'sidC')

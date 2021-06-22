@@ -100,7 +100,7 @@ class Context {
 
         this.clients2sockets.add(client_id, socket_id)
         this.sockets2clients.add(socket_id, client_id)
-        this.sockets.set(socket_id, new SocketCache(socket_id, this.emit))
+        this.sockets.set(socket_id, new SocketCache(socket_id, this.id, this.emit))
 
         await this.update_status()
 
@@ -184,7 +184,7 @@ class Context {
     async close() {
         await this.config.on_close?.()
 
-        this.sockets.forEach(socket => this.emit(socket.id, 'close', {
+        this.sockets.forEach(cache => this.emit(cache.sid, 'close', {
             name: this.name,
             params: this.params,
             id: this.id,

@@ -10,7 +10,7 @@ describe('SocketCache', () => {
         emit = (dest, event, payload) => {
             emitter.emit(event, dest, payload)
         }
-        cache = new SocketCache('123', emit)
+        cache = new SocketCache('123', 'ctx', emit)
         data_emitted = 0
         status_emitted = 0
     })
@@ -24,7 +24,7 @@ describe('SocketCache', () => {
             status_emitted += 1
         })
 
-        new SocketCache('123', emitter)
+        new SocketCache('123', (dest, event, payload) => emitter.emit(event, dest, payload))
 
         data_emitted.should.be.exactly(0)
         status_emitted.should.be.exactly(0)
@@ -34,7 +34,10 @@ describe('SocketCache', () => {
         emitter.on('data', (dest, data) => {
             data_emitted += 1
             dest.should.be.eql('123')
-            data.should.be.eql('abc')
+            data.should.be.eql({
+                id: 'ctx',
+                data:'abc',
+            })
         })
 
         emitter.on('status', () => {
@@ -51,7 +54,10 @@ describe('SocketCache', () => {
         emitter.on('data', (dest, data) => {
             data_emitted += 1
             dest.should.be.eql('123')
-            data.should.be.eql('abc')
+            data.should.be.eql({
+                id: 'ctx',
+                data:'abc',
+            })
         })
 
         emitter.on('status', () => {
@@ -90,7 +96,10 @@ describe('SocketCache', () => {
         emitter.on('status', (dest, status) => {
             status_emitted += 1
             dest.should.be.eql('123')
-            status.should.be.eql('abc')
+            status.should.be.eql({
+                id: 'ctx',
+                status:'abc',
+            })
         })
 
         cache.update_status('abc')
@@ -107,7 +116,10 @@ describe('SocketCache', () => {
         emitter.on('status', (dest, status) => {
             status_emitted += 1
             dest.should.be.eql('123')
-            status.should.be.eql('abc')
+            status.should.be.eql({
+                id: 'ctx',
+                status:'abc',
+            })
         })
 
         cache.update_status('abc')
