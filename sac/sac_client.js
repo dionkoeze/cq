@@ -85,6 +85,8 @@ function create(id, name, params, callbacks) {
         }
     }
 
+    // TODO cache data and status objects and expose them through the context handle
+
     // only the context object is exposed
     return {
         context: new Context(id, name, params),
@@ -118,4 +120,5 @@ module.exports = {
     init,
     join,
     get,
+    // TODO function to leave all contexts
 }

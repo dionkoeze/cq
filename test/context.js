@@ -25,11 +25,6 @@ describe('Context', () => {
             query: 'select all',
         }
 
-        // reply = {
-        //     success: () => {},
-        //     error: () => {},
-        // }
-        
         reply = () => {}
 
         id = context_id(config.name, params)
@@ -159,23 +154,6 @@ describe('Context', () => {
 
             called.should.be.true()
         })
-
-        // it('notifies socket of success', () => {
-        //     let called = false
-        //     reply = (msg) => {
-        //         called = true
-        //         msg.should.have.property('success', true)
-        //         msg.should.have.property('type', 'context created')
-        //         msg.should.have.property('name', config.name)
-        //         msg.should.have.property('params', params)
-        //         msg.should.have.property('id', id)
-        //         msg.should.have.property('message', 'context created')
-        //     }
-
-        //     create_context()
-
-        //     called.should.be.true()
-        // })
     })
     
     describe('joining sockets', () => {
@@ -193,6 +171,16 @@ describe('Context', () => {
             let called = false
 
             config.authorize = () => called = true
+
+            await context.join(reply, 'sid', 'auth')
+
+            called.should.be.true()
+        })
+
+        it('calls update_data on the context on successful connection', async () => {
+            let called = false
+
+            context.update_data = () => called = true
 
             await context.join(reply, 'sid', 'auth')
 
@@ -233,6 +221,32 @@ describe('Context', () => {
             }
 
             await context.join(reply, 'sid', 'auth')
+        })
+
+        it('updates data and status after replying on successful connection', async () => {
+            let reply_called = false, data_called = false, status_called = false
+
+            context.update_data = () => {
+                data_called = true
+                reply_called.should.be.true()
+            }
+
+            context.update_status = () => {
+                status_called = true
+                reply_called.should.be.true()
+            }
+
+            reply = (_) => {
+                reply_called = true
+                data_called.should.be.false()
+                status_called.should.be.false()
+            }
+
+            await context.join(reply, 'sid', 'auth')
+
+            reply_called.should.be.true()
+            data_called.should.be.true()
+            status_called.should.be.true()
         })
 
         it('multiple clients can join with one socket each', async () => {
@@ -392,7 +406,7 @@ describe('Context', () => {
         })
 
         it('sends updated status to all sockets', async () => {
-            config.status = clients => clients
+            config.status = (params, clients) => clients
             
             let Acalled = 0, Bcalled = 0, Ccalled = 0
             
@@ -414,7 +428,7 @@ describe('Context', () => {
         })
 
         it('sends update status only to sockets that are behind', async () => {
-            config.status = clients => 'status'
+            config.status = (params, clients) => 'status'
 
             await context.update_status()
 
@@ -684,7 +698,7 @@ describe('Context', () => {
         it('updates the status before replying', async () => {
             let replied = false, updated = false
 
-            config.status = clients => clients
+            config.status = (params, clients) => clients
 
             reply = () => {
                 replied = true

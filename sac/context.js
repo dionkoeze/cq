@@ -39,8 +39,6 @@ class Context {
         this.sockets = new Map()
 
         this.config.init?.(this.update_data.bind(this), this.update_status.bind(this), this.close.bind(this))
-
-        // reply(this.build_success('context created', 'context created'))
     }
     
     build_error(type, err) {
@@ -92,7 +90,7 @@ class Context {
         }
 
         try {
-            await this.config.can_join?.(client_id, this.clients2sockets.keys)
+            await this.config.can_join?.(client_id, Array.from(this.clients2sockets.keys))
         } catch (err) {
             reply(this.build_error('not allowed', err))
             return
@@ -102,14 +100,17 @@ class Context {
         this.sockets2clients.add(socket_id, client_id)
         this.sockets.set(socket_id, new SocketCache(socket_id, this.id, this.emit))
 
-        await this.update_status()
+        reply(this.build_success('joined', `joined context ${this.name}`))
 
         await this.config.joined?.(socket_id, client_id)
 
-        reply(this.build_success('joined', `joined context ${this.name}`))
+        await this.update_data()
+
+        await this.update_status()
     }
 
     async handle_request(reply, request, socket_id) {
+        // TODO below
         // SHOULD EMIT AN EVENT SIGNALLING ALL OTHER CONTEXTS THEY
         // MIGHT NEED TO UPDATE THEIR DATA BEFORE THIS REQUEST IS
         // REPLIED TO SOCKET (GUARANTEE THAT DATA IS UPDATED BEFORE REPLY)
@@ -142,8 +143,9 @@ class Context {
 
     }
 
+    // TODO cache data so newly joined sockets don't trigger this method?
     async update_data() {
-        const data = await this.config.data?.()
+        const data = await this.config.data?.(this.params)
 
         if (data != null) {
             this.sockets.forEach(socket => socket.update_data(data))
@@ -151,7 +153,7 @@ class Context {
     }
 
     async update_status() {
-        const status = await this.config.status?.(this.clients2sockets.keys)
+        const status = await this.config.status?.(this.params, Array.from(this.clients2sockets.keys))
 
         if (status != null) {
             this.sockets.forEach(socket => socket.update_status(status))
@@ -160,6 +162,8 @@ class Context {
 
     async leave(reply, socket_id) {
         if (this.sockets2clients.hasKey(socket_id)) {
+            // TODO make this more robust, it's possible to join multiple times from one
+            // TODO socket with a different auth object (identity)
             // this assumes a socket has at most one client connected
             const clients = this.sockets2clients.get(socket_id)
             const client_id = clients.values().next().value
